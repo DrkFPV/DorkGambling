@@ -1,8 +1,8 @@
 local _, core = ...;
-core.Config = {};
+core.config = {};
 
-local Config = core.Config;
-local DorkGambling;
+local config = core.config;
+local dorkGambling;
 core.gameModes = {
     ["Death Roll"] = {
         minPlayers =2,
@@ -23,24 +23,24 @@ core.gameModes = {
     }
   }
 
-function Config:Toggle()
-    local menu = DorkGambling or Config:CreateMenu();
+function config:toggle()
+    local menu = dorkGambling or config:CreateMenu();
     menu:SetShown(not menu:IsShown())
 end
 
-function Config:RegisterTextEvents()
-    DorkGambling:RegisterEvent("CHAT_MSG_SYSTEM");
-    DorkGambling:RegisterEvent("CHAT_MSG_PARTY");
-    DorkGambling:RegisterEvent("CHAT_MSG_PARTY_LEADER");
-    DorkGambling:SetScript("OnEvent", core.TextEventHandler)
+function config:registerTextEvents()
+    dorkGambling:RegisterEvent("CHAT_MSG_SYSTEM");
+    dorkGambling:RegisterEvent("CHAT_MSG_PARTY");
+    dorkGambling:RegisterEvent("CHAT_MSG_PARTY_LEADER");
+    dorkGambling:SetScript("OnEvent", core.TextEventHandler)
 end
 
-function Config:UnregisterTextEvents()
+function config:unregisterTextEvents()
 end
 
 
-function Config:CreateButton(point, relativeFrame, relativePoint, xOffset, yOffset, text, xSize, ySize)
-    local btn = CreateFrame("Button", nil, DorkGambling, "GameMenuButtonTemplate");
+function config:CreateButton(point, relativeFrame, relativePoint, xOffset, yOffset, text, xSize, ySize)
+    local btn = CreateFrame("Button", nil, dorkGambling, "GameMenuButtonTemplate");
     btn:SetPoint(point, relativeFrame, relativePoint, xOffset, yOffset);
     btn:SetSize(xSize,ySize);
     btn:SetText(text);
@@ -49,121 +49,120 @@ function Config:CreateButton(point, relativeFrame, relativePoint, xOffset, yOffs
     return btn;
 end
 
-function Config:SetGameType(newValue)
+function config:SetGameType(newValue)
     core.SelectedGameType = core.gameModes[newValue].name;
-    UIDropDownMenu_SetText(DorkGambling.gameTypeDropDown, core.SelectedGameType);
+    UIDropDownMenu_SetText(dorkGambling.gameTypeDropDown, core.SelectedGameType);
     print(core.SelectedGameType)
     CloseDropDownMenus();
 end
 
-function core:StartGame()
+function core:startGame()
     core.game = core.game or core.newGame(core.SelectedGameType, core.currentBet)
     if core.game.state == nil then
-        DorkGambling.startBtn:SetText('Start Roll');
-        Config:RegisterTextEvents();
+        dorkGambling.startBtn:SetText('Start Roll');
+        config:registerTextEvents();
         core.game.state = 'Waiting';
     elseif (core.game.state == 'Waiting') then
-        DorkGambling.startBtn:SetText('In Progress');
+        dorkGambling.startBtn:SetText('In Progress');
         core.game.state = 'In Progress'
     end
 end
 
-function Config:CreateMenu()
-    DorkGambling = CreateFrame("FRAME", "DorkGambling", UIParent, "UIPanelDialogTemplate");
+function config:CreateMenu()
+    dorkGambling = CreateFrame("FRAME", "dorkGambling", UIParent, "UIPanelDialogTemplate");
     --------------------
     -- Make Draggable --
     --------------------
-    DorkGambling:SetMovable(true)
-    DorkGambling:EnableMouse(true)
-    DorkGambling:RegisterForDrag("LeftButton")
-    DorkGambling:SetScript("OnDragStart", DorkGambling.StartMoving)
-    DorkGambling:SetScript("OnDragStop", DorkGambling.StopMovingOrSizing)
+    dorkGambling:SetMovable(true)
+    dorkGambling:EnableMouse(true)
+    dorkGambling:RegisterForDrag("LeftButton")
+    dorkGambling:SetScript("OnDragStart", dorkGambling.StartMoving)
+    dorkGambling:SetScript("OnDragStop", dorkGambling.StopMovingOrSizing)
 
-    DorkGambling:SetSize(200,300);
-    DorkGambling:SetPoint("Center", UIParent, "Center");
+    dorkGambling:SetSize(200,300);
+    dorkGambling:SetPoint("Center", UIParent, "Center");
 
-    DorkGambling.Title:SetFontObject("GameFontHighlight");
-    DorkGambling.Title:SetPoint("Left", DorkGamblingTitleBG, "Left", 6, 2);
-    DorkGambling.Title:SetText("Dork Gambling");
+    dorkGambling.Title:SetFontObject("GameFontHighlight");
+    dorkGambling.Title:SetPoint("Left", dorkGamblingTitleBG, "Left", 6, 2);
+    dorkGambling.Title:SetText("Dork Gambling");
 
     ------------------------------
     -- Game Type DropDown menu ---
     ------------------------------
-    DorkGambling.gameTypeDropDown = CreateFrame("Frame", "GameTypeDropDown", DorkGambling , "UIDropDownMenuTemplate");
+    dorkGambling.gameTypeDropDown = CreateFrame("Frame", "GameTypeDropDown", dorkGambling , "UIDropDownMenuTemplate");
     GameTypeDropDown.displayMode = "Menu";
-    UIDropDownMenu_Initialize(DorkGambling.gameTypeDropDown, 
+    UIDropDownMenu_Initialize(dorkGambling.gameTypeDropDown, 
     function(self, level, menuList)
         local info = UIDropDownMenu_CreateInfo()
-        info.func = Config.SetGameType;
+        info.func = config.SetGameType;
         for k,v in pairs(core.gameModes) do            
             info.text, info.arg1, info.checked = v.name, k, v.name == core.SelectedGameType
             UIDropDownMenu_AddButton(info)
         end
     end)
-    DorkGambling.gameTypeDropDown:SetPoint('CENTER', DorkGamblingDialogBG, "TOP", 0, -20 );
-    UIDropDownMenu_SetWidth(DorkGambling.gameTypeDropDown, 150)
+    dorkGambling.gameTypeDropDown:SetPoint('CENTER', dorkGamblingDialogBG, "TOP", 0, -20 );
+    UIDropDownMenu_SetWidth(dorkGambling.gameTypeDropDown, 150)
     core.SelectedGameType = core.gameModes["Death Roll"].name;
-    UIDropDownMenu_SetText(DorkGambling.gameTypeDropDown, core.SelectedGameType)
+    UIDropDownMenu_SetText(dorkGambling.gameTypeDropDown, core.SelectedGameType)
 
     ---------------------------
     ---- BUTTONS, MARRAAAZZZ---
     ---------------------------
 
-    DorkGambling.startBtn = self:CreateButton("CENTER", DorkGambling.gameTypeDropDown, "TOP", 50, -50, "Start", 80, 20)
-    DorkGambling.startBtn:SetScript("OnClick", core.StartGame)
+    dorkGambling.startBtn = self:CreateButton("CENTER", dorkGambling.gameTypeDropDown, "TOP", 50, -50, "Start", 80, 20)
+    dorkGambling.startBtn:SetScript("OnClick", core.startGame)
 
     ---------------------------
     -- Input for bet ammount --
     ---------------------------
-    DorkGambling.editbox = CreateFrame("EditBox", nil, DorkGambling, "InputBoxTemplate")
-    DorkGambling.editbox:SetMultiLine(false)
-    DorkGambling.editbox:SetPoint("CENTER", DorkGamblingDialogBG, "TOP", -40, -53);
-    DorkGambling.editbox:SetFontObject("ChatFontNormal")
-    DorkGambling.editbox:SetWidth(80)
-    DorkGambling.editbox:SetHeight(20)
-    DorkGambling.editbox:SetText(1000)
-    DorkGambling.editbox:SetAutoFocus(false)
-    DorkGambling.editbox:SetNumeric();
-    DorkGambling.editbox:SetScript("OnEscapePressed", function() 
-        DorkGambling.currentBet = DorkGambling.editbox:GetNumber();    
+    dorkGambling.editbox = CreateFrame("EditBox", nil, dorkGambling, "InputBoxTemplate")
+    dorkGambling.editbox:SetMultiLine(false)
+    dorkGambling.editbox:SetPoint("CENTER", dorkGamblingDialogBG, "TOP", -40, -53);
+    dorkGambling.editbox:SetFontObject("ChatFontNormal")
+    dorkGambling.editbox:SetWidth(80)
+    dorkGambling.editbox:SetHeight(20)
+    dorkGambling.editbox:SetText(1000)
+    dorkGambling.editbox:SetAutoFocus(false)
+    dorkGambling.editbox:SetNumeric();
+    dorkGambling.editbox:SetScript("OnEscapePressed", function() 
+        dorkGambling.currentBet = dorkGambling.editbox:GetNumber();    
     end)
-    DorkGambling.editbox:SetScript("OnEnterPressed", function()
-        DorkGambling.currentBet = DorkGambling.editbox:GetNumber();
+    dorkGambling.editbox:SetScript("OnEnterPressed", function()
+        dorkGambling.currentBet = dorkGambling.editbox:GetNumber();
     end
     )
 
     -------------
     -- Divider --
     -------------
-    DorkGambling.line = DorkGambling:CreateTexture()
-    DorkGambling.line:SetTexture("Interface/BUTTONS/WHITE8X8")
-    DorkGambling.line:SetColorTexture(1 ,1, 1, .2)
-    DorkGambling.line:SetSize(180, 2)
-    DorkGambling.line:SetPoint("CENTER",DorkGamblingDialogBG, "TOP",0,-75)
+    dorkGambling.line = dorkGambling:CreateTexture()
+    dorkGambling.line:SetTexture("Interface/BUTTONS/WHITE8X8")
+    dorkGambling.line:SetColorTexture(1 ,1, 1, .2)
+    dorkGambling.line:SetSize(180, 2)
+    dorkGambling.line:SetPoint("CENTER",dorkGamblingDialogBG, "TOP",0,-75)
 
     
 
     ------------------
     --- texts --------
     ------------------
-    DorkGambling.playerCount = DorkGambling:CreateFontString("Player Count:","DorkGamblingDialogBG");
-    DorkGambling.playerCount:SetFontObject("GameFontNormal");
-    DorkGambling.playerCount:SetPoint("TOP", DorkGambling.line, "CENTER", 0, -2);
-    DorkGambling.playerCount:SetText("Players in game: 0");
+    dorkGambling.playerCount = dorkGambling:CreateFontString("Player Count:","dorkGamblingDialogBG");
+    dorkGambling.playerCount:SetFontObject("GameFontNormal");
+    dorkGambling.playerCount:SetPoint("TOP", dorkGambling.line, "CENTER", 0, -2);
+    dorkGambling.playerCount:SetText("Players in game: 0");
 
-    DorkGambling:Hide();
-    return DorkGambling
+    dorkGambling:Hide();
+    return dorkGambling
 end
 
----@param playerCount number
-function Config:UpdatePlayerCount()
+function config:updatePlayerCount()
     if core.game.numPlayers ~= nil then
-        DorkGambling.playerCount:SetText("Players in game: " .. core.game.numPlayers .. " (max:"..core.game.maxNumPlayers..")");
+        dorkGambling.playerCount:SetText("Players in game: " .. core.game.numPlayers .. " (max:"..core.game.maxNumPlayers..")");
     end
     if core.game:gameCanStart() then
-        DorkGambling.playerCount:SetFontObject("GameFontGreen");
+        dorkGambling.playerCount:SetFontObject("GameFontGreen");
     else
-        DorkGambling.playerCount:SetFontObject("GameFontNormal");
+        dorkGambling.playerCount:SetFontObject("GameFontNormal");
     end
 
 end

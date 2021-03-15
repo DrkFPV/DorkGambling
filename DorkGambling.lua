@@ -38,12 +38,12 @@ local function debugPlayersInGame()
   end
 end
 
-local function dgMessage(msg, chatType)
+function core:dgMessage(msg, chatType)
   local msg = '[DorkGambling]: '.. msg
   SendChatMessage(msg,chatType)
 end
 
-function debugGame()
+function DebugGame()
   return core
 end
 
@@ -100,7 +100,7 @@ local function processRoll(roller, rollResult, rollMin, rollMax)
   end
 end
 
----@param core.gameType string core.game type
+---@param gameType string game type
 ---@param bet number the gold bet
 function core.newGame(gameType, bet)
   if core.game ~= nil then
@@ -167,50 +167,16 @@ local function removePlayerFromGame(playerName)
   end
 end
 
-local function restartGame()
+function core:restartGame()
   print('restarting core.game')
   core.game = nil
 end
 
-local function startGame()
-  if core.game:gameCanStart() then
-    core.game.gameState = 'WaitingForRolls'
-
-    if core.game.gameType == 'DeathRoll' then 
-      core.game.currentPlayer = core.game:pickRandomPlayer()
-      dgMessage("DeathRoll core.game Started!", "Party")
-      dgMessage(game.currentPlayer .. " Goes first! (/roll 1000)", "Party")
-
-    elseif core.game.gameType == 'HighLow' then
-      dgMessage("HighLow core.game Started!", "Party")
-      dgMessage("/roll " .. core.game.currentRoll , "Party")
-    end
-  end
-end
-
 local function dorkGamblingCommands(msg)
-  -- if validCommands[msg] == nil then
-  --   print('not a valid command')
-  --   return
-  -- elseif msg == 'debug' then
-  --   debugGame()
-  --   return
-  -- elseif msg == 'start' and core.game ~= nil then
-  --   if core.game.gameState == 'WaitingForPlayers' then
-  --     startGame()
-  --   end
-  --   return
-  -- elseif msg == 'restart' then
-  --   restartGame()
-  --   return
-  -- elseif core.gameMode[msg] then
-  --   if core.game ~= nil then
-  --     print('Game In Progress')
-  --     return
-  --   end
-  --   core.game = newGame(msg, GetRealmName())
-  --   dgMessage('A new ' .. core.game.gameType ..' core.game has started. Type \'1\' to join. \'-1\' to leave', 'Party')
-  -- end
+  if msg == '' then
+    core.config:toggle();
+    return
+  end
 end
 
 function core:init(event, name, ...)
@@ -218,7 +184,7 @@ function core:init(event, name, ...)
 
   SLASH_DORKGAMBLING1, SLASH_DORKGAMBLING2, SLASH_DORKGAMBLING3  = "/dg", "/dork", "/DorkGambling"
   SlashCmdList.DORKGAMBLING = dorkGamblingCommands;
-  core.Config:Toggle();
+  core.config:toggle();
 end
 
 function core:TextEventHandler(event, ...)
@@ -240,7 +206,7 @@ function core:TextEventHandler(event, ...)
       elseif msg == '-1' then
         removePlayerFromGame(string.match(roller, "(%a+)"))
       end
-      core.Config:UpdatePlayerCount()
+      core.config:updatePlayerCount()
     end
   end
 end
