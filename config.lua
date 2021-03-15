@@ -36,6 +36,9 @@ function config:registerTextEvents()
 end
 
 function config:unregisterTextEvents()
+    dorkGambling:UnregisterEvent("CHAT_MSG_SYSTEM");
+    dorkGambling:UnregisterEvent("CHAT_MSG_PARTY");
+    dorkGambling:UnregisterEvent("CHAT_MSG_PARTY_LEADER");
 end
 
 
@@ -52,7 +55,6 @@ end
 function config:SetGameType(newValue)
     core.SelectedGameType = core.gameModes[newValue].name;
     UIDropDownMenu_SetText(dorkGambling.gameTypeDropDown, core.SelectedGameType);
-    print(core.SelectedGameType)
     CloseDropDownMenus();
 end
 
@@ -60,16 +62,30 @@ function core:startGame()
     core.game = core.game or core.newGame(core.SelectedGameType, core.currentBet)
     if core.game.state == nil then
         dorkGambling.startBtn:SetText('Start Roll');
+        dorkGambling.startBtn:Disable();
+        dorkGambling.cancleBtn:Enable();
         config:registerTextEvents();
         core.game.state = 'Waiting';
+        core:dgMessage('Game Started! Type 1 in chat to join, -1 to leave', "Party")
     elseif (core.game.state == 'Waiting') then
         dorkGambling.startBtn:SetText('In Progress');
         core.game.state = 'In Progress'
     end
 end
 
+function core:resetGame()
+    core.game = nil;
+    dorkGambling.startBtn:SetText('Start');
+    dorkGambling.startBtn:Enable();
+    dorkGambling.playerCount:SetText('Players in game: 0');
+    dorkGambling.playerCount:SetFontObject("GameFontNormal");
+    dorkGambling.cancleBtn:Disable();
+    config.unregisterTextEvents();
+end
+
 function config:CreateMenu()
     dorkGambling = CreateFrame("FRAME", "dorkGambling", UIParent, "UIPanelDialogTemplate");
+
     --------------------
     -- Make Draggable --
     --------------------
@@ -79,7 +95,7 @@ function config:CreateMenu()
     dorkGambling:SetScript("OnDragStart", dorkGambling.StartMoving)
     dorkGambling:SetScript("OnDragStop", dorkGambling.StopMovingOrSizing)
 
-    dorkGambling:SetSize(200,300);
+    dorkGambling:SetSize(200,200);
     dorkGambling:SetPoint("Center", UIParent, "Center");
 
     dorkGambling.Title:SetFontObject("GameFontHighlight");
@@ -101,16 +117,19 @@ function config:CreateMenu()
         end
     end)
     dorkGambling.gameTypeDropDown:SetPoint('CENTER', dorkGamblingDialogBG, "TOP", 0, -20 );
-    UIDropDownMenu_SetWidth(dorkGambling.gameTypeDropDown, 150)
+    UIDropDownMenu_SetWidth(dorkGambling.gameTypeDropDown, 150);
     core.SelectedGameType = core.gameModes["Death Roll"].name;
-    UIDropDownMenu_SetText(dorkGambling.gameTypeDropDown, core.SelectedGameType)
+    UIDropDownMenu_SetText(dorkGambling.gameTypeDropDown, core.SelectedGameType);
 
     ---------------------------
     ---- BUTTONS, MARRAAAZZZ---
     ---------------------------
+    dorkGambling.startBtn = self:CreateButton("CENTER", dorkGambling.gameTypeDropDown, "TOP", 50, -50, "Start", 80, 20);
+    dorkGambling.startBtn:SetScript("OnClick", core.startGame);
 
-    dorkGambling.startBtn = self:CreateButton("CENTER", dorkGambling.gameTypeDropDown, "TOP", 50, -50, "Start", 80, 20)
-    dorkGambling.startBtn:SetScript("OnClick", core.startGame)
+    dorkGambling.cancleBtn = self:CreateButton("BOTTOM", dorkGambling, "BOTTOM", 0, 10, "Reset Game", 130, 20);
+    dorkGambling.cancleBtn:SetScript("OnClick", core.resetGame);
+    dorkGambling.cancleBtn:Disable();
 
     ---------------------------
     -- Input for bet ammount --
@@ -141,8 +160,6 @@ function config:CreateMenu()
     dorkGambling.line:SetSize(180, 2)
     dorkGambling.line:SetPoint("CENTER",dorkGamblingDialogBG, "TOP",0,-75)
 
-    
-
     ------------------
     --- texts --------
     ------------------
@@ -161,8 +178,10 @@ function config:updatePlayerCount()
     end
     if core.game:gameCanStart() then
         dorkGambling.playerCount:SetFontObject("GameFontGreen");
+        dorkGambling.startBtn:Enable()
     else
         dorkGambling.playerCount:SetFontObject("GameFontNormal");
+        dorkGambling.startBtn:Disable()
     end
 
 end

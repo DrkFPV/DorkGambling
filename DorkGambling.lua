@@ -150,11 +150,9 @@ end
 
 ---@param playerName string player name to add
 local function addPlayerToGame(playerName)
-  print(playerName)
   if core.game.players[playerName] == nil  then
     core.game.players[playerName] = {rolled = nil, name = playerName}
     core.game.numPlayers = core.game.numPlayers + 1
-    print('added '..playerName..' to the game')
   end
 end
 
@@ -163,7 +161,6 @@ local function removePlayerFromGame(playerName)
   if core.game.players[playerName] ~= nil then
     core.game.players[playerName] = nil
     core.game.numPlayers = core.game.numPlayers - 1
-    print('remove '..playerName..' from the game')
   end
 end
 
@@ -188,7 +185,7 @@ function core:init(event, name, ...)
 end
 
 function core:TextEventHandler(event, ...)
-  if GetNumGroupMembers() == 0 then
+  if GetNumGroupMembers() == 0 or core.game == nil then
     return
   elseif event == "CHAT_MSG_SYSTEM" and core.game ~= nil then
     if core.game.state == 'In Progress' then
