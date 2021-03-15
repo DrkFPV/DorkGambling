@@ -1,0 +1,9 @@
+## Interface: 90005
+## Title: Dork Gambling
+## Notes: Dork's Gambling Addon
+## SavedVariables: DorkGamblingDB
+## Version: 0.1
+
+debugTools.lua
+config.lua
+DorkGambling.lua

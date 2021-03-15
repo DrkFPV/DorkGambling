@@ -1,0 +1,14 @@
+{
+    "Lua.diagnostics.globals": [
+        "CloseDropDownMenus",
+        "UIDropDownMenu_SetText",
+        "UIDropDownMenu_Initialize",
+        "UIDropDownMenu_AddButton",
+        "UIDropDownMenu_CreateInfo",
+        "UIDropDownMenu_SetWidth"
+    ],
+    "Lua.diagnostics.disable": [
+        "undefined-global",
+        "undefined-field"
+    ]
+}
