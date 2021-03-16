@@ -59,6 +59,10 @@ function config:SetGameType(newValue)
 end
 
 function core:startGame()
+    if GetNumGroupMembers() == 0 then
+        print("Cant start a game when you're not in a party!")
+        return;
+    end
     core.game = core.game or core.newGame(core.SelectedGameType, core.currentBet)
     if core.game.state == nil then
         dorkGambling.startBtn:SetText('Start Roll');
@@ -81,6 +85,10 @@ function core:resetGame()
     dorkGambling.playerCount:SetFontObject("GameFontNormal");
     dorkGambling.cancleBtn:Disable();
     config.unregisterTextEvents();
+end
+
+function config:PlayersInGame()
+    --
 end
 
 function config:CreateMenu()
@@ -168,6 +176,7 @@ function config:CreateMenu()
     dorkGambling.playerCount:SetPoint("TOP", dorkGambling.line, "CENTER", 0, -2);
     dorkGambling.playerCount:SetText("Players in game: 0");
 
+
     dorkGambling:Hide();
     return dorkGambling
 end
@@ -185,39 +194,3 @@ function config:updatePlayerCount()
     end
 
 end
-
--- gameType = gameType,
--- gameState = 'WaitingForPlayers',
--- players = {},
--- server = server,
--- maxNumPlayers = gameModes[gameType].maxPlayers,
--- minNumPlayers = gameModes[gameType].minPlayers,
--- numPlayers = 0,
--- currentRoll = 1000,
--- highRoll = 0,
--- highPlayer = nil,
--- highTie = {},
--- lowRoll = 9999999999,
--- lowPlayer = nil,
--- lowTie = {},
--- gameCanStart = function (self)
---   return self.numPlayers >= self.minNumPlayers
--- end,
--- pickRandomPlayer = function (self)
---   if self.numPlayers > 1 then
---     return random_key(self.players).name
---   else
---     return nil
---   end
--- end,
--- allPlayersRolled = function (self)
---   if gameType == 'HighLow' or gameType == 'Bracket' then
---     for k,v in pairs(self.players) do
---       if v.roll == nil then
---         return false
---       end
---     end
---     return true
---   end
---   return nil
--- end
