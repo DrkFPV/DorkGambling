@@ -53,8 +53,8 @@ function config:CreateButton(point, relativeFrame, relativePoint, xOffset, yOffs
 end
 
 function config:SetGameType(newValue)
-    core.SelectedGameType = core.gameModes[newValue].name;
-    UIDropDownMenu_SetText(dorkGambling.gameTypeDropDown, core.SelectedGameType);
+    core.selectedGameType = core.gameModes[newValue].name;
+    UIDropDownMenu_SetText(dorkGambling.gameTypeDropDown, core.selectedGameType);
     CloseDropDownMenus();
 end
 
@@ -63,14 +63,14 @@ function core:startGame()
         print("Cant start a game when you're not in a party!")
         return;
     end
-    core.game = core.game or core.newGame(core.SelectedGameType, core.currentBet)
+    core.game = core.game or core.newGame(core.selectedGameType, core.currentBet)
     if core.game.state == nil then
-        dorkGambling.startBtn:SetText('Start Roll');
+        dorkGambling.startBtn:SetText('Roll');
         dorkGambling.startBtn:Disable();
         dorkGambling.cancleBtn:Enable();
         config:registerTextEvents();
         core.game.state = 'Waiting';
-        core:dgMessage('Game Started! Type 1 in chat to join, -1 to leave', "Party")
+        core:dgMessage(core.selectedGameType ..' game Started! Type 1 in chat to join, -1 to leave', "Party")
     elseif (core.game.state == 'Waiting') then
         dorkGambling.startBtn:SetText('In Progress');
         core.game.state = 'In Progress'
@@ -85,6 +85,7 @@ function core:resetGame()
     dorkGambling.playerCount:SetFontObject("GameFontNormal");
     dorkGambling.cancleBtn:Disable();
     config.unregisterTextEvents();
+    core:dgMessage("Game reset!", "Party")
 end
 
 function config:PlayersInGame()
@@ -120,14 +121,14 @@ function config:CreateMenu()
         local info = UIDropDownMenu_CreateInfo()
         info.func = config.SetGameType;
         for k,v in pairs(core.gameModes) do            
-            info.text, info.arg1, info.checked = v.name, k, v.name == core.SelectedGameType
+            info.text, info.arg1, info.checked = v.name, k, v.name == core.selectedGameType
             UIDropDownMenu_AddButton(info)
         end
     end)
     dorkGambling.gameTypeDropDown:SetPoint('CENTER', dorkGamblingDialogBG, "TOP", 0, -20 );
     UIDropDownMenu_SetWidth(dorkGambling.gameTypeDropDown, 150);
-    core.SelectedGameType = core.gameModes["Death Roll"].name;
-    UIDropDownMenu_SetText(dorkGambling.gameTypeDropDown, core.SelectedGameType);
+    core.selectedGameType = core.gameModes["Death Roll"].name;
+    UIDropDownMenu_SetText(dorkGambling.gameTypeDropDown, core.selectedGameType);
 
     ---------------------------
     ---- BUTTONS, MARRAAAZZZ---
@@ -192,5 +193,4 @@ function config:updatePlayerCount()
         dorkGambling.playerCount:SetFontObject("GameFontNormal");
         dorkGambling.startBtn:Disable()
     end
-
 end

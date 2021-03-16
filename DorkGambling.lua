@@ -150,9 +150,17 @@ end
 
 ---@param playerName string player name to add
 local function addPlayerToGame(playerName)
+  
+  if core.game.numPlayers >= core.game.maxNumPlayers then
+    return
+  end
   if core.game.players[playerName] == nil  then
     core.game.players[playerName] = {rolled = nil, name = playerName}
     core.game.numPlayers = core.game.numPlayers + 1
+    if core.game.numPlayers >= core.game.maxNumPlayers then
+      print(core.game.numPlayers, core.game.maxNumPlayers, core.selectedGameType)
+      core:dgMessage('Max players reached for '.. core.selectedGameType .. '! Click Roll to start!','Party')
+    end
   end
 end
 
