@@ -56,17 +56,18 @@ local function playerIsInGame(playerName)
   return false
 end
 
-local function processRoll(roller, rollResult, rollMin, rollMax)
-  if core.game.gameType == 'Death Roll' then
+function core:processRoll(roller, rollResult, rollMin, rollMax)
+  print(roller, rollResult)
+  if core.selectedGameType == 'Death Roll' then
     if roller == core.game.currentPlayer and rollMax == core.game.currentRoll and rollMin == 1 then
       if rollResult == 1 then
         local winner = getOtherPlayer(core.game.players,roller) 
-        dgMessage(winner .. " Wins! " .. roller .." pays " .. winner .. " {bet} gold!" , "Party")
+        core:dgMessage(winner .. " Wins! " .. roller .." pays " .. winner .. core.game. .." gold!" , "Party")
         core.game = nil
       else
         core.game.currentPlayer = getOtherPlayer(core.game.players,roller)
         core.game.currentRoll = rollResult
-        dgMessage(core.game.currentPlayer .. ' next: (/roll ' .. core.game.currentRoll ..')' ,'Party')
+        core:dgMessage(core.game.currentPlayer .. ' next: (/roll ' .. core.game.currentRoll ..')' ,'Party')
       end
     end
 
@@ -159,7 +160,7 @@ local function addPlayerToGame(playerName)
     core.game.numPlayers = core.game.numPlayers + 1
     if core.game.numPlayers >= core.game.maxNumPlayers then
       print(core.game.numPlayers, core.game.maxNumPlayers, core.selectedGameType)
-      core:dgMessage('Max players reached for '.. core.selectedGameType .. '! Click Roll to start!','Party')
+      core:dgMessage('Max players reached for '.. core.selectedGameType .. '! Click roll to start!','Party')
     end
   end
 end
@@ -196,15 +197,15 @@ function core:TextEventHandler(event, ...)
   if GetNumGroupMembers() == 0 or core.game == nil then
     return
   elseif event == "CHAT_MSG_SYSTEM" and core.game ~= nil then
-    if core.game.state == 'In Progress' then
+    if core.game.state == 'Waiting' then
       local message = ...
       local roller, rollResult, rollMin, rollMax = string.match(message, "(.+) rolls (%d+) %((%d+)-(%d+)%)");
       if roller and rollResult and rollMin and rollMax then 
-        processRoll(roller, tonumber(rollResult), tonumber(rollMin), tonumber(rollMax))
+        core:processRoll(roller, tonumber(rollResult), tonumber(rollMin), tonumber(rollMax))
       end
     end
   elseif (event == "CHAT_MSG_PARTY" or "CHAT_MSG_PARTY_LEADER") then
-    if core.game.state == 'Waiting' then
+    if core.game.state == 'Lets Roll' then
       local msg, roller = ...
       if msg == '1' then
         addPlayerToGame(string.match(roller, "(%a+)"))
@@ -219,6 +220,7 @@ end
 local events = CreateFrame("Frame");
 events:RegisterEvent("ADDON_LOADED");
 events:SetScript("OnEvent", core.init);
+
 ---@class player
 ---@field public name string @name of the player
 ---@field public rolled number @what the player rolled

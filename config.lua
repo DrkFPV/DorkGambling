@@ -60,20 +60,30 @@ end
 
 function core:startGame()
     if GetNumGroupMembers() == 0 then
-        print("Cant start a game when you're not in a party!")
+        print("Cant start a game when you're not in a party!");
         return;
     end
-    core.game = core.game or core.newGame(core.selectedGameType, core.currentBet)
+    core.currentBet = dorkGambling.editbox:GetNumber();
+    core.game = core.game or core.newGame(core.selectedGameType, core.currentBet);
     if core.game.state == nil then
-        dorkGambling.startBtn:SetText('Roll');
+        dorkGambling.startBtn:SetText('Lets Roll');
         dorkGambling.startBtn:Disable();
         dorkGambling.cancleBtn:Enable();
+        dorkGambling.cancleBtn:Enable();
         config:registerTextEvents();
-        core.game.state = 'Waiting';
-        core:dgMessage(core.selectedGameType ..' game Started! Type 1 in chat to join, -1 to leave', "Party")
+        core.game.state = 'Lets Roll';
+        core:dgMessage(core.selectedGameType ..' game started for '.. core.currentBet ..' gold! Type 1 in chat to join, -1 to leave', "Party")
+    elseif (core.game.state == 'Lets Roll') then
+        if core.selectedGameType == 'Death Roll' then
+            core.game.currentPlayer = core.game:pickRandomPlayer();
+            core:dgMessage(core.game.currentPlayer .. ' next: (/roll ' .. core.game.currentRoll ..')' ,'Party');
+        end
+        dorkGambling.startBtn:SetText('Waiting');
+        core.game.state = 'Waiting'
+        
+        dorkGambling.startBtn:Disable();
     elseif (core.game.state == 'Waiting') then
-        dorkGambling.startBtn:SetText('In Progress');
-        core.game.state = 'In Progress'
+
     end
 end
 
@@ -84,6 +94,8 @@ function core:resetGame()
     dorkGambling.playerCount:SetText('Players in game: 0');
     dorkGambling.playerCount:SetFontObject("GameFontNormal");
     dorkGambling.cancleBtn:Disable();
+    dorkGambling.editbox:Disable();
+    
     config.unregisterTextEvents();
     core:dgMessage("Game reset!", "Party")
 end
@@ -131,7 +143,7 @@ function config:CreateMenu()
     UIDropDownMenu_SetText(dorkGambling.gameTypeDropDown, core.selectedGameType);
 
     ---------------------------
-    ---- BUTTONS, MARRAAAZZZ---
+    --- BUTTONS, MARRAAAZZZ ---
     ---------------------------
     dorkGambling.startBtn = self:CreateButton("CENTER", dorkGambling.gameTypeDropDown, "TOP", 50, -50, "Start", 80, 20);
     dorkGambling.startBtn:SetScript("OnClick", core.startGame);
@@ -143,22 +155,23 @@ function config:CreateMenu()
     ---------------------------
     -- Input for bet ammount --
     ---------------------------
-    dorkGambling.editbox = CreateFrame("EditBox", nil, dorkGambling, "InputBoxTemplate")
-    dorkGambling.editbox:SetMultiLine(false)
-    dorkGambling.editbox:SetPoint("CENTER", dorkGamblingDialogBG, "TOP", -40, -53);
-    dorkGambling.editbox:SetFontObject("ChatFontNormal")
-    dorkGambling.editbox:SetWidth(80)
-    dorkGambling.editbox:SetHeight(20)
-    dorkGambling.editbox:SetText(1000)
-    dorkGambling.editbox:SetAutoFocus(false)
+    core.currentBet = 1000;
+    dorkGambling.editbox = CreateFrame("EditBox", nil, dorkGambling, "InputBoxTemplate");
+    dorkGambling.editbox:SetMultiLine(false);
+    dorkGambling.editbox:SetPoint("CENTER", dorkGamblingDialogBG, "TOP", -20, -53);
+    dorkGambling.editbox:SetFontObject("ChatFontNormal");
+    dorkGambling.editbox:SetWidth(60);
+    dorkGambling.editbox:SetHeight(20);
+    dorkGambling.editbox:SetNumber(core.currentBet);
+    dorkGambling.editbox:SetAutoFocus(false);
     dorkGambling.editbox:SetNumeric();
-    dorkGambling.editbox:SetScript("OnEscapePressed", function() 
-        dorkGambling.currentBet = dorkGambling.editbox:GetNumber();    
+    
+    dorkGambling.editbox:SetScript("OnEscapePressed", function()
+        core.currentBet = dorkGambling.editbox:GetNumber();
     end)
     dorkGambling.editbox:SetScript("OnEnterPressed", function()
-        dorkGambling.currentBet = dorkGambling.editbox:GetNumber();
-    end
-    )
+        core.currentBet = dorkGambling.editbox:GetNumber();
+    end)
 
     -------------
     -- Divider --
@@ -172,11 +185,16 @@ function config:CreateMenu()
     ------------------
     --- texts --------
     ------------------
-    dorkGambling.playerCount = dorkGambling:CreateFontString("Player Count:","dorkGamblingDialogBG");
+    dorkGambling.playerCount = dorkGambling:CreateFontString("playerCount","dorkGamblingDialogBG");
     dorkGambling.playerCount:SetFontObject("GameFontNormal");
     dorkGambling.playerCount:SetPoint("TOP", dorkGambling.line, "CENTER", 0, -2);
     dorkGambling.playerCount:SetText("Players in game: 0");
 
+    -- Bet Text -----
+    dorkGambling.betText = dorkGambling:CreateFontString("betText", dorkGambling.editbox);
+    dorkGambling.betText:SetFontObject("GameFontNormal");
+    dorkGambling.betText:SetPoint("LEFT", dorkGambling.editbox, "LEFT", -30, 0);
+    dorkGambling.betText:SetText("Bet:");
 
     dorkGambling:Hide();
     return dorkGambling
